@@ -87,7 +87,8 @@ exports.startEvent = async (req, res) => {
           "Latitude",
           "Longitude",
           "Range",
-          "imageLink"
+          "imageLink",
+          "riddleImageLink"
         );
 
       rList.push(level[seq[i]]);

@@ -5,7 +5,7 @@ module.exports = {
   development: {
     client: 'pg',
     connection: {
-      connectionString: process.env.DB_URL,
+      connectionString:'postgres://postgres:new_password@db:5432/postgres',
       // ssl: { rejectUnauthorized: false },
     },
     migrations: {
