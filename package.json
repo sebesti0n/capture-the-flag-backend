@@ -2,7 +2,7 @@
   "name": "capturetheflag",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "migrate": "knex migrate:latest --knexfile ./Configuration/knexfile.js",
     "start": "node app.js",

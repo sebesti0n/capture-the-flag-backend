@@ -28,6 +28,25 @@ exports.createTeam = async (req, res) => {
       wa_number,
       event_id,
     });
+    
+    const alreadyExist = await knex('teams')
+            .where('player1_eid',player1_eid)
+            .orWhere('player2_eid',player1_eid)
+            .orWhere('player3_eid',player1_eid)
+            .orWhere('player1_eid',player2_eid)
+            .orWhere('player2_eid',player2_eid)
+            .orWhere('player3_eid',player2_eid)
+            .orWhere('player1_eid',player3_eid)
+            .orWhere('player2_eid',player3_eid)
+            .orWhere('player3_eid',player3_eid)
+            .andWhere('event_id',event_id)
+            .returning('team_id');
+    console.log('alreadyExist',alreadyExist);
+    
+    if(alreadyExist.length>0){
+      return res.status(200).json({success:false, message:"Uh oh! Seems like we might have a double-booking situation with one of your players."})
+    }
+
     const data1 = await knex("teams")
       .insert({
         team_name: team_name,
@@ -42,7 +61,8 @@ exports.createTeam = async (req, res) => {
         event_id: event_id,
       })
       .returning("*");
-      const tid = data1[0].team_id;
+
+    const tid = data1[0].team_id;
     const data = await knex("events")
       .where("event_id", "=", event_id)
       .returning("levels", "node_at_each_level");
