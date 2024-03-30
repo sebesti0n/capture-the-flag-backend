@@ -2,6 +2,7 @@ const express = require('express')
 const routes=require('./Routes/auth')
 const eventRouter = require('./Routes/event')
 const adminRouter = require('./Routes/admin');
+const webRouter = require('./Routes/webRoute')
 const cors = require('cors');
 const validationMiddleware = require('./middlewares/validationMiddleware');
 const knex = require('knex')(require('./Configuration/knexfile')['development']);
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/', routes);
 app.use('/event', eventRouter);
 app.use('/admin', adminRouter);
+app.use('/event-web',webRouter);
 app.listen(PORT, '0.0.0.0', () => {
   console.log('Listening to 3000');
 });

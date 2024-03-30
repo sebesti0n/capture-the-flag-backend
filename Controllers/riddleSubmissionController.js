@@ -126,14 +126,6 @@ exports.startEvent = async (req, res) => {
 exports.onSubmit = async (req, res) => {
   try {
     const { eid, tid, currRid, nextRid, unqCode, answer } = req.body;
-    console.log({
-      eid,
-      tid,
-      currRid,
-      nextRid,
-      unqCode,
-      answer,
-    });
     const currentTime = Date.now();
 
     await knex.transaction(async (trx) => {
@@ -161,7 +153,17 @@ exports.onSubmit = async (req, res) => {
         .update({ endTime: currentTime })
         .returning("startTime");
       console.log("currentRiddleStartMs", currentRiddleStartMs);
-
+      const nextidx = await trx("user_event_participation")
+              .where({
+                team_id: tid,
+                event_id: eid,
+              })
+              .returning("Number_correct_answer");
+      if(currentRiddleStartMs.length==0)return res.status(200).json({
+        success:true,
+        message:"Submit successfully",
+        next: nextidx[0].Number_correct_answer,
+    })
       const earnedPoint = Math.max(
         250,
         Math.floor(

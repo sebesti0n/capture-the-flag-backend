@@ -18,7 +18,6 @@ router.get('/event-registration', eventregistrationcontroller.isUserRegisterforE
 router.get('/eventRegistration',eventcontroller.registerUserinEvents);
 router.get('/leaderboard',lc.getLeaderBoard);
 
-
 router.get('/event-details',eventcontroller.eventDetails)
 router.get('/submission',qc.submissionRiddle);
 router.get('/start-contest',qc.startEvent);
