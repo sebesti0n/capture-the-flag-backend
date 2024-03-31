@@ -9,7 +9,7 @@ const lc = require('../Controllers/leaderBoardController');
 const teamController = require('../Controllers/teamController');
 const hintController = require('../Controllers/hintsController');
 
-router.get('/all', eventcontroller.upcomingEvents);
+router.get('/all', eventcontroller.allEvents);
 router.get('/live', eventcontroller.liveEvents);
 router.get('/register', eventcontroller.registeredEventforUser);
 router.get('/history', eventcontroller.historyEventofUser);

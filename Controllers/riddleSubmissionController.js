@@ -127,6 +127,11 @@ exports.onSubmit = async (req, res) => {
   try {
     const { eid, tid, currRid, nextRid, unqCode, answer } = req.body;
     const currentTime = Date.now();
+    const endTime = await knex('events')
+                          .where('event_id',eid)
+                          .returning('end_ms');
+    if(currentTime>endTime[0].end_ms)
+      return res.status(200).json({success:true,message:"contest has been Ended",next:-1})
 
     await knex.transaction(async (trx) => {
       const pointsArray = await trx("questions")

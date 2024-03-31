@@ -2,15 +2,16 @@ const knex = require("knex")(
   require("../Configuration/knexfile")["development"]
 );
 
-exports.upcomingEvents = async (req, res) => {
+exports.allEvents = async (req, res) => {
   try {
     const currentDate = new Date();
     const currTime = currentDate.getTime();
     console.log(currTime);
     const events = await knex("events")
-      .where("start_ms", ">=", currTime)
-      .orWhere("end_ms", ">=", currTime)
       .returning("*");
+      return res
+      .status(200)
+      .json({ success: true, message: "event", event: events });
   } catch (err) {
     console.log(err);
     res
