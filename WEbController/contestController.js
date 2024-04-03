@@ -10,6 +10,7 @@ exports.startEvent = async (req, res) => {
       .orWhere("player2_eid", regId)
       .orWhere("player3_eid", regId)
       .returning("team_id");
+      console.log('teamId',team);
       if(team.length===0){
         return res.json({success:true, message: "Team not Registered",sequence:null, nextRiddleIndex:null});
       }
@@ -52,6 +53,21 @@ exports.startEvent = async (req, res) => {
   
         qList.push(level[seq[i]].question_id);
       }
+      const isRiddleavailable = await knex("answers_history")
+      .where("question_id", "=", qList[0])
+      .andWhere("event_id", "=", eid)
+      .andWhere("teamId", "=", tid)
+      .count("*");
+
+    const count = isRiddleavailable[0].count;
+    if (count == 0) {
+      await knex("answers_history").insert({
+        question_id: qList[0],
+        event_id: eid,
+        teamId: tid,
+        startTime: Date.now(),
+      });
+    }
       
       return res.json({success:true, message:"Sequence of Riddle", sequence:qList, nextRiddleIndex:next});
     } catch(err){
@@ -249,5 +265,125 @@ exports.riddleStoryLine = async (req, res) => {
             .status(500)
             .json({ success: false, message: "Unknown Error", next: null });
         }
+      };
+
+      exports.getHint = async (req,res)=>{
+        const eid=req.query.eid;
+        const enroll = req.query.enroll;
+        const type = req.query.type;
+        const riddleId = req.query.riddle;
+
+        try {
+          const team = await knex("teams")
+          .where("player1_eid", enroll)
+          .orWhere("player2_eid", enroll)
+          .orWhere("player3_eid", enroll)
+          .returning("team_id");
+          if(team.length===0){
+            return res.json({success:true, message: "Team not Registered"});
+          }
+        const tid = team[0].team_id;
+          
+          const hints = await knex('questions')
+                            .where('question_id',riddleId)
+                            .returning('Hint1','Hint2','Hint3');
+          if(hints.length===0){
+            return res.status(200).json({success:true,message:"No Hints Available"});
+          }
+          const hint1=hints[0].Hint1;
+          const hint2=hints[0].Hint2;
+          const hint3=hints[0].Hint3;
+          const data = await knex('answers_history')
+                      .where('event_id',eid)
+                      .andWhere('teamId',tid)
+                      .andWhere('question_id',riddleId)
+                      .returning('startTime','hint1','hint2','hint3');
+          console.log(data);
+          const timeSpan = Number(Date.now())-Number(data[0].startTime);
+          if(type==1){
+            if(timeSpan>=1800000){
+              if(data[0].hint1==0){
+                await knex("pointsTable")
+              .insert({
+                eventId: eid,
+                teamId: tid,
+                TotalPoints: -50,
+              })
+              .onConflict(["eventId", "teamId"])
+              .merge({
+                TotalPoints: knex.raw("?? + ?", [
+                  "pointsTable.TotalPoints",
+                  -50,
+                ]),
+              });
+              }
+              res.status(200).json({success:true,message:hint1});
+            }
+            else{
+              let remTime=5400000-Number(timeSpan);
+              remTime=Math.floor(remTime/1000);
+              const min=Math.floor((remTime%3600)/60);
+              res.status(200).json({success:true,message:"Unlocked in "+String(min)+"min."});            }
+          }
+          if(type==2){
+            if(timeSpan>=3600000){
+              if(data[0].hint2==0){
+                await knex("pointsTable")
+              .insert({
+                eventId: eid,
+                teamId: tid,
+                TotalPoints: -50,
+              })
+              .onConflict(["eventId", "teamId"])
+              .merge({
+                TotalPoints: knex.raw("?? + ?", [
+                  "pointsTable.TotalPoints",
+                  -50,
+                ]),
+              });
+              }
+              res.status(200).json({success:true,message:hint2});
+            }
+            else{
+              let remTime=3600000-Number(timeSpan);
+              remTime=Math.floor(remTime/1000);
+              const min=Math.floor((remTime%3600)/60);
+              res.status(200).json({success:true,message:"Unlocked in "+String(min)+"min."});            }
+          }if(type==3){
+            if(timeSpan>=5400000){
+              if(data[0].hint3==0){
+                await knex("pointsTable")
+              .insert({
+                eventId: eid,
+                teamId: tid,
+                TotalPoints: -50,
+              })
+              .onConflict(["eventId", "teamId"])
+              .merge({
+                TotalPoints: knex.raw("?? + ?", [
+                  "pointsTable.TotalPoints",
+                  -50,
+                ]),
+              });
+              }
+              res.status(200).json({success:true,message:hint3});
+            }
+            else{
+              let remTime=5400000-Number(timeSpan);
+              remTime=Math.floor(remTime/1000);
+              const hr=Math.floor(remTime/3600);
+              const min=Math.floor((remTime%3600)/60);
+              res.status(200).json({success:true,message:"Unlocked in "+String(hr)+"hr "+String(min)+"min."});
+            }
+          }
+          
+        } catch (error) {
+          console.log(error);
+          return res
+            .status(500)
+            .json({ success: false, message: "Internal Server Error!"});
+          
+        }
+
       };
       

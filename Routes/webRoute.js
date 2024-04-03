@@ -6,5 +6,6 @@ const contestController = require('../WEbController/contestController')
 router.get('/startContest',contestController.startEvent);
 router.get('/riddle',contestController.riddleStoryLine);
 router.post('/submit',contestController.onSubmit);
+router.get('/hint',contestController.getHint);
 
 module.exports = router;

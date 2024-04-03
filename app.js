@@ -3,6 +3,7 @@ const routes=require('./Routes/auth')
 const eventRouter = require('./Routes/event')
 const adminRouter = require('./Routes/admin');
 const webRouter = require('./Routes/webRoute')
+const allIsWell = require('./Routes/all_is_well');
 const cors = require('cors');
 const validationMiddleware = require('./middlewares/validationMiddleware');
 const knex = require('knex')(require('./Configuration/knexfile')['development']);
@@ -17,6 +18,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/', routes);
+app.use('/all_is_well',allIsWell)
 app.use('/event', eventRouter);
 app.use('/admin', adminRouter);
 app.use('/event-web',webRouter);
