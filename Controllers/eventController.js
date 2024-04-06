@@ -46,8 +46,7 @@ exports.liveEvents = async (req, res) => {
     console.log(currTime);
     const events = await knex("events")
       .select("*")
-      .where("start_ms", "<=", currTime)
-      .andWhere("end_ms", ">=", currTime);
+      .where("end_ms", ">=", currTime);
     res.status(200).json({ success: true, message: "ok", event: events });
   } catch (error) {
     console.log(error);
