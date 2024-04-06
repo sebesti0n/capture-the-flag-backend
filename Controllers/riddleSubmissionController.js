@@ -40,7 +40,6 @@ exports.startEvent = async (req, res) => {
       .orWhere("player2_eid", regId)
       .orWhere("player3_eid", regId)
       .returning("team_id");
-    console.log(team);
     const tid = team[0].team_id;
     await knex("user_event_participation")
       .whereNull("start_time")
@@ -56,7 +55,6 @@ exports.startEvent = async (req, res) => {
       .where("event_id", "=", eid)
       .andWhere("team_id", "=", tid)
       .returning("*");
-    console.log("data", data);
     let next = 0;
     let seq;
     let rList = [];
@@ -67,7 +65,6 @@ exports.startEvent = async (req, res) => {
     } else {
       seq = [];
     }
-    console.log("seq", seq);
     for (let i = 0; i < seq.length; i++) {
       const level = await knex("questions")
         .where("event_id", "=", eid)
@@ -129,9 +126,11 @@ exports.onSubmit = async (req, res) => {
     const currentTime = Date.now();
     const endTime = await knex('events')
                           .where('event_id',eid)
-                          .returning('end_ms');
+                          .returning('end_ms','start_ms');
     if(currentTime>endTime[0].end_ms)
       return res.status(200).json({success:true,message:"contest has been Ended",next:-1})
+
+    const eventStartTime = endTime[0].start_ms;
 
     await knex.transaction(async (trx) => {
       const pointsArray = await trx("questions")
@@ -141,7 +140,6 @@ exports.onSubmit = async (req, res) => {
           answer: answer,
         })
         .select("point");
-      console.log("pointsArray", pointsArray);
       if (pointsArray.size == 0) {
         return res
           .status(200)
@@ -157,7 +155,6 @@ exports.onSubmit = async (req, res) => {
         })
         .update({ endTime: currentTime })
         .returning("startTime");
-      console.log("currentRiddleStartMs", currentRiddleStartMs);
       const nextidx = await trx("user_event_participation")
               .where({
                 team_id: tid,
@@ -173,7 +170,7 @@ exports.onSubmit = async (req, res) => {
         250,
         Math.floor(
           point -
-            ((Date.now() - currentRiddleStartMs[0].startTime) / 600000) * 10
+            ((Date.now() - eventStartTime) / 600000) * 10
         )
       );
       if (nextRid != -1) {
@@ -194,7 +191,6 @@ exports.onSubmit = async (req, res) => {
         .update({ end_time: currentTime })
         .returning("Number_correct_answer");
 
-      console.log("nextIndex", nextIndex);
 
       await trx("pointsTable")
         .insert({
